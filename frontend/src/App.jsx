@@ -310,9 +310,16 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        html, body { 
+  margin: 0; padding: 0; 
+  width: 100%; height: 100%;
+  background: ${T.bg};
+  font-family: 'Inter', sans-serif; 
+  overflow: hidden; 
+}
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: ${T.accent}55; border-radius: 4px; }
+        
 
         .app {
           width: 100vw; height: 100vh;
