@@ -17,3 +17,5 @@ AI Mood Detection: Upload an MP3 or WAV file, and our backend scans the rhythm a
 Frontend: React.js, Web Audio API, Canvas HTML5 (Deployed on Netlify)
 
 Backend: Python, FastAPI, Librosa, Scikit-Learn (Deployed on Render)
+
+Live demo available on : https://aeroplayer.netlify.app/
