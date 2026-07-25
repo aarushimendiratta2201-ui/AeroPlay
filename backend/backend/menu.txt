@@ -1,0 +1,63 @@
+STARTERS
+1 Tomato Basil Soup - 120
+2 Sweet Corn Soup - 130
+3 Classic French Fries - 110
+4 PeriPeri Fries - 140
+5 Garlic Bread - 130
+6 Cheese Garlic Bread - 160
+7 Veg Spring Rolls - 150
+8 Chicken Spring Rolls - 180
+9 Crispy Chilli Baby Corn - 180
+10 Chicken Popcorn - 200
+
+SALADS
+11 Garden Fresh Salad - 160
+12 Caesar Salad Veg - 180
+13 Caesar Salad Chicken - 220
+14 Greek Salad - 200
+15 Protein Bowl Veg - 210
+
+MAIN COURSE – INDIAN
+16 Paneer Butter Masala - 240
+17 Kadai Paneer - 230
+18 Dal Tadka - 170
+19 Dal Makhani - 200
+20 Butter Chicken - 290
+21 Chicken Tikka Masala - 300
+22 Jeera Rice - 140
+23 Veg Biryani - 220
+24 Chicken Biryani - 280
+25 Tandoori Roti - 20
+26 Butter Naan - 40
+
+MAIN COURSE – CONTINENTAL
+27 Veg Alfredo Pasta - 240
+28 Chicken Alfredo Pasta - 280
+29 Veg Arrabbiata Pasta - 230
+30 Margherita Pizza - 260
+31 Farmhouse Pizza - 320
+32 BBQ Chicken Pizza - 360
+33 Grilled Veg Sandwich - 150
+34 Chicken Club Sandwich - 190
+35 Veg Burger - 160
+36 Chicken Burger - 190
+
+SNACKS & SIDES
+37 Nachos with Salsa - 150
+38 Cheese Nachos - 180
+39 Veg Momos - 130
+40 Chicken Momos - 160
+
+DESSERTS
+41 Chocolate Brownie - 140
+42 Choco Lava Cake - 150
+43 Gulab Jamun - 90
+44 Ice Cream Scoop - 70
+45 Fruit Salad with Ice Cream - 120
+
+DRINKS
+46 Mineral Water - 20
+47 Fresh Lime Soda - 80
+48 Cold Coffee - 120
+49 Iced Tea - 110
+50 Classic Milkshake - 140
