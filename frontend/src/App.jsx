@@ -27,6 +27,9 @@ const T = IS_DAY ? {
   highlight: "#00ddff",
 }
 
+// Utility function to keep RGBA opacity values strictly between 0 and 1
+const clamp = (val, min = 0, max = 1) => Math.min(Math.max(val, min), max)
+
 export default function App() {
   const [tracks, setTracks] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -37,6 +40,7 @@ export default function App() {
   const [volume, setVolume] = useState(80)
   const [time, setTime] = useState("--:--")
   const [moodGroups, setMoodGroups] = useState({})
+  const [selectedMood, setSelectedMood] = useState(null)
 
   const audioRef = useRef(null)
   const canvasRef = useRef(null)
@@ -46,7 +50,7 @@ export default function App() {
   const animRef = useRef(null)
   const vizAnimRef = useRef(null)
 
-  // clock
+  // Clock tick
   useEffect(() => {
     const tick = () => {
       const now = new Date()
@@ -57,11 +61,12 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
-  // background bubbles
+  // Frutiger Aero Background Bubbles Effect
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext("2d")
+    
     const resize = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
@@ -69,67 +74,125 @@ export default function App() {
     resize()
     window.addEventListener("resize", resize)
 
-    const bubbles = Array.from({length: 18}, () => ({
+    const bubbles = Array.from({ length: 25 }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      r: Math.random() * 40 + 10,
-      speed: Math.random() * 0.4 + 0.1,
-      opacity: Math.random() * 0.4 + 0.1,
+      r: Math.random() * 35 + 15,
+      speed: Math.random() * 0.5 + 0.2,
+      opacity: Math.random() * 0.35 + 0.15,
       wobble: Math.random() * Math.PI * 2,
     }))
 
     function draw() {
       animRef.current = requestAnimationFrame(draw)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      
       bubbles.forEach(b => {
         b.y -= b.speed
         b.wobble += 0.015
-        b.x += Math.sin(b.wobble) * 0.4
+        b.x += Math.sin(b.wobble) * 0.5
+
         if (b.y + b.r < 0) {
           b.y = canvas.height + b.r
           b.x = Math.random() * canvas.width
         }
-        const grad = ctx.createRadialGradient(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.1, b.x, b.y, b.r)
-        grad.addColorStop(0, IS_DAY ? `rgba(255,255,255,${b.opacity+0.3})` : `rgba(0,150,255,${b.opacity+0.2})`)
-        grad.addColorStop(0.5, IS_DAY ? `rgba(200,240,255,${b.opacity})` : `rgba(0,50,150,${b.opacity})`)
-        grad.addColorStop(1, `rgba(255,255,255,0)`)
+
+        const baseAlpha = b.opacity
+
+        // Main bubble gradient
+        const grad = ctx.createRadialGradient(
+          b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.05,
+          b.x, b.y, b.r
+        )
+        
+        if (IS_DAY) {
+          grad.addColorStop(0, `rgba(255,255,255,${clamp(baseAlpha + 0.45)})`)
+          grad.addColorStop(0.35, `rgba(180,235,255,${clamp(baseAlpha + 0.15)})`)
+          grad.addColorStop(0.7, `rgba(120,200,255,${clamp(baseAlpha * 0.6)})`)
+          grad.addColorStop(1, `rgba(100,180,255,0)`)
+        } else {
+          grad.addColorStop(0, `rgba(140,220,255,${clamp(baseAlpha + 0.35)})`)
+          grad.addColorStop(0.35, `rgba(0,120,220,${clamp(baseAlpha + 0.15)})`)
+          grad.addColorStop(0.7, `rgba(0,60,160,${clamp(baseAlpha * 0.5)})`)
+          grad.addColorStop(1, `rgba(0,20,80,0)`)
+        }
+
         ctx.beginPath()
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI*2)
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
         ctx.fillStyle = grad
         ctx.fill()
+
+        // Rim highlight - outer specular ring
         ctx.beginPath()
-        ctx.ellipse(b.x - b.r*0.25, b.y - b.r*0.3, b.r*0.35, b.r*0.2, -Math.PI/4, 0, Math.PI*2)
-        ctx.fillStyle = IS_DAY ? "rgba(255,255,255,0.6)" : "rgba(100,200,255,0.4)"
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
+        ctx.strokeStyle = IS_DAY ? `rgba(255,255,255,${clamp(baseAlpha * 0.85)})` : `rgba(120,200,255,${clamp(baseAlpha * 0.7)})`
+        ctx.lineWidth = 1.2
+        ctx.stroke()
+
+        // Primary top-left glossy crescent ellipse
+        const gloss1 = ctx.createRadialGradient(
+          b.x - b.r * 0.3, b.y - b.r * 0.35, 0,
+          b.x - b.r * 0.3, b.y - b.r * 0.35, Math.max(b.r * 0.5, 1)
+        )
+        gloss1.addColorStop(0, `rgba(255,255,255,${clamp(baseAlpha + 0.55)})`)
+        gloss1.addColorStop(0.5, `rgba(255,255,255,${clamp(baseAlpha * 0.25)})`)
+        gloss1.addColorStop(1, `rgba(255,255,255,0)`)
+
+        ctx.beginPath()
+        ctx.ellipse(b.x - b.r * 0.25, b.y - b.r * 0.28, Math.max(b.r * 0.38, 1), Math.max(b.r * 0.22, 1), -Math.PI / 4, 0, Math.PI * 2)
+        ctx.fillStyle = gloss1
+        ctx.fill()
+
+        // Secondary bright specular dot reflection
+        ctx.beginPath()
+        ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.4, Math.max(b.r * 0.08, 0.5), 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,255,255,${clamp(baseAlpha + 0.65, 0, 0.95)})`
+        ctx.fill()
+
+        // Bottom inner ambient reflection
+        const gloss2 = ctx.createRadialGradient(
+          b.x, b.y + b.r * 0.6, 0, 
+          b.x, b.y + b.r * 0.6, Math.max(b.r * 0.4, 1)
+        )
+        gloss2.addColorStop(0, IS_DAY ? `rgba(200,245,255,${clamp(baseAlpha * 0.4)})` : `rgba(0,180,255,${clamp(baseAlpha * 0.3)})`)
+        gloss2.addColorStop(1, `rgba(255,255,255,0)`)
+
+        ctx.beginPath()
+        ctx.ellipse(b.x, b.y + b.r * 0.55, Math.max(b.r * 0.3, 1), Math.max(b.r * 0.15, 1), 0, 0, Math.PI * 2)
+        ctx.fillStyle = gloss2
         ctx.fill()
       })
     }
+    
     draw()
+
     return () => {
       window.removeEventListener("resize", resize)
       cancelAnimationFrame(animRef.current)
     }
   }, [])
 
-  // visualizer draw loop
+  // Audio Visualizer canvas loop
   function startViz() {
     const canvas = vizCanvasRef.current
     const analyser = analyserRef.current
     if (!canvas || !analyser) return
     const ctx = canvas.getContext("2d")
     const data = new Uint8Array(analyser.frequencyBinCount)
-  
+
     function draw() {
       vizAnimRef.current = requestAnimationFrame(draw)
       analyser.getByteFrequencyData(data)
-  
-      // fix resolution
+
       const rect = canvas.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) return
+
       canvas.width = rect.width * window.devicePixelRatio
       canvas.height = rect.height * window.devicePixelRatio
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
-  
+
       ctx.clearRect(0, 0, rect.width, rect.height)
-  
+
       const barW = (rect.width / data.length) * 1.8
       let x = 0
       data.forEach(val => {
@@ -153,7 +216,6 @@ export default function App() {
   }
 
   function readMetadata(file) {
-
     return new Promise((resolve) => {
       if (typeof window.jsmediatags === "undefined") {
         resolve({ title: null, artist: null, art: null })
@@ -173,6 +235,7 @@ export default function App() {
       })
     })
   }
+
   function getDuration(file) {
     return new Promise((resolve) => {
       const audio = new Audio()
@@ -189,7 +252,7 @@ export default function App() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      const res = await fetch("http://localhost:8000/analyse", {
+      const res = await fetch("https://aeroplay.onrender.com/analyse", {
         method: "POST",
         body: formData,
       })
@@ -199,21 +262,7 @@ export default function App() {
       return "Chill"
     }
   }
-  
-  async function getDescription(mood, trackNames) {
-    try {
-      const res = await fetch("http://localhost:8000/describe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mood, tracks: trackNames }),
-      })
-      const data = await res.json()
-      return data.description || ""
-    } catch {
-      return ""
-    }
-  }
-  
+
   async function handleFiles(e) {
     const files = Array.from(e.target.files)
     const newTracks = await Promise.all(files.map(async (f) => {
@@ -229,15 +278,14 @@ export default function App() {
         duration,
       }
     }))
-  
+
     setTracks(prev => {
       const updated = [...prev, ...newTracks]
       if (prev.length === 0) setTimeout(() => loadTrack(0, updated), 100)
       return updated
     })
-  
-    // analyse mood for each track in background
-    newTracks.forEach(async (t, i) => {
+
+    newTracks.forEach(async (t) => {
       const mood = await analyseMood(t.file)
       setTracks(prev => {
         const updated = [...prev]
@@ -245,8 +293,7 @@ export default function App() {
         if (idx !== -1) updated[idx] = { ...updated[idx], mood }
         return updated
       })
-  
-      // group by mood and get description
+
       setMoodGroups(prev => {
         const updated = { ...prev }
         if (!updated[mood]) updated[mood] = []
@@ -309,41 +356,53 @@ export default function App() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        *, *::before, *::after { 
+          box-sizing: border-box !important; 
+          margin: 0; 
+          padding: 0; 
+        }
+
         html, body { 
-  margin: 0; padding: 0; 
-  width: 100%; height: 100%;
-  background: ${T.bg};
-  font-family: 'Inter', sans-serif; 
-  overflow: hidden; 
-}
+          margin: 0; 
+          padding: 0; 
+          width: 100vw; 
+          height: 100vh;
+          background: ${T.bg};
+          font-family: 'Inter', sans-serif; 
+          overflow: hidden; 
+        }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: ${T.accent}55; border-radius: 4px; }
-        
 
         .app {
-          width: 100vw; height: 100vh;
-          display: flex; flex-direction: column;
-          position: relative; overflow: hidden;
+          width: 100vw; 
+          height: 100vh;
+          display: flex; 
+          flex-direction: column;
+          position: relative; 
+          overflow: hidden;
           background: ${T.bg};
         }
 
         input[type=range] {
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: ${T.glass};
-  border: 1px solid ${T.glassBorder};
-  outline: none;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  background: ${T.accent};
-  box-shadow: 0 0 6px ${T.accentGlow};
-  cursor: pointer;
-}
+          -webkit-appearance: none;
+          height: 4px;
+          border-radius: 2px;
+          background: ${T.glass};
+          border: 1px solid ${T.glassBorder};
+          outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 12px; height: 12px;
+          border-radius: 50%;
+          background: ${T.accent};
+          box-shadow: 0 0 6px ${T.accentGlow};
+          cursor: pointer;
+        }
 
         ${IS_DAY ? `
         .app::before {
@@ -375,26 +434,67 @@ input[type=range]::-webkit-slider-thumb {
         }
 
         .main-layout {
-          display: flex; flex: 1; overflow: hidden;
-          position: relative; z-index: 2;
+          display: flex; 
+          flex: 1; 
+          width: 100%;
+          height: calc(100vh - 80px);
+          overflow: hidden;
+          position: relative; 
+          z-index: 2;
         }
 
         .sidebar {
-          width: 220px; min-width: 220px;
-          display: flex; flex-direction: column;
-          padding: 16px 12px; gap: 4px;
-          background: ${T.sidebar};
-          backdrop-filter: blur(20px) saturate(180%);
-          -webkit-backdrop-filter: blur(20px) saturate(180%);
+          width: 240px; 
+          min-width: 240px;
+          max-width: 240px;
+          height: 100%;
+          display: flex; 
+          flex-direction: column;
+          padding: 20px 14px; 
+          gap: 12px;
+          background: ${IS_DAY ? 
+            "linear-gradient(160deg, rgba(255,255,255,0.45) 0%, rgba(200,235,255,0.25) 50%, rgba(255,255,255,0.15) 100%)" :
+            "linear-gradient(160deg, rgba(0,40,100,0.6) 0%, rgba(0,20,60,0.4) 50%, rgba(0,30,80,0.3) 100%)"
+          };
+          backdrop-filter: blur(32px) saturate(200%);
+          -webkit-backdrop-filter: blur(32px) saturate(200%);
           border-right: 1px solid ${T.glassBorder};
           overflow-y: auto;
+          z-index: 5;
+          position: relative;
+        }
+
+        .sidebar::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 60%;
+          background: linear-gradient(180deg, 
+            rgba(255,255,255,0.25) 0%, 
+            rgba(255,255,255,0.08) 50%,
+            transparent 100%);
+          border-radius: 0 0 60% 60%;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .sidebar::after {
+          content: '';
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 30%;
+          background: linear-gradient(0deg,
+            rgba(255,255,255,0.08) 0%,
+            transparent 100%);
+          pointer-events: none;
+          z-index: 0;
         }
 
         .logo {
           font-size: 20px; font-weight: 700;
           color: ${T.accent};
           text-shadow: 0 0 12px ${T.accentGlow};
-          padding: 8px 10px 16px;
+          padding: 4px 10px 12px;
           letter-spacing: -0.5px;
         }
 
@@ -406,7 +506,7 @@ input[type=range]::-webkit-slider-thumb {
 
         .mood-group {
           display: flex; align-items: center; gap: 8px;
-          padding: 7px 10px; border-radius: 8px;
+          padding: 8px 10px; border-radius: 8px;
           cursor: pointer; transition: all 0.15s;
         }
         .mood-group:hover { background: ${T.glass}; }
@@ -414,20 +514,34 @@ input[type=range]::-webkit-slider-thumb {
         .mood-group .mg-count { font-size: 10px; color: ${T.textSub}; }
 
         .upload-side {
-          display: flex; align-items: center; gap: 8px;
-          padding: 9px 10px; border-radius: 10px;
-          font-size: 12px; font-weight: 600;
-          color: ${T.accent}; cursor: pointer;
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          gap: 8px;
+          padding: 12px; 
+          border-radius: 10px;
+          font-size: 13px; 
+          font-weight: 600;
+          color: ${T.accent}; 
+          cursor: pointer;
           border: 1px dashed ${T.accent}66;
           background: ${T.accent}11;
-          transition: all 0.2s; margin-top: 8px;
+          transition: all 0.2s; 
+          margin-top: auto;
+          position: relative;
+          z-index: 20;
         }
         .upload-side:hover { background: ${T.accent}22; }
 
         .content {
-          flex: 1; overflow-y: auto;
+          flex: 1; 
+          height: 100%;
+          overflow-y: auto;
           padding: 24px 28px;
-          display: flex; flex-direction: column; gap: 18px;
+          display: flex; 
+          flex-direction: column; 
+          gap: 18px;
+          min-width: 0;
         }
 
         .content-header {
@@ -446,17 +560,30 @@ input[type=range]::-webkit-slider-thumb {
         .hero-card {
           display: flex; gap: 20px; padding: 20px;
           border-radius: 16px; position: relative; overflow: hidden;
-          background: ${T.glass};
-          backdrop-filter: blur(16px) saturate(150%);
-          -webkit-backdrop-filter: blur(16px) saturate(150%);
+          background: ${IS_DAY ?
+            "linear-gradient(160deg, rgba(255,255,255,0.5) 0%, rgba(200,235,255,0.3) 100%)" :
+            "linear-gradient(160deg, rgba(0,50,120,0.5) 0%, rgba(0,20,60,0.3) 100%)"
+          };
+          backdrop-filter: blur(28px) saturate(180%);
+          -webkit-backdrop-filter: blur(28px) saturate(180%);
           border: 1px solid ${T.glassBorder};
-          box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+          box-shadow: 
+            0 8px 32px rgba(0,0,0,0.15),
+            0 2px 0 rgba(255,255,255,0.4) inset,
+            0 -1px 0 rgba(255,255,255,0.1) inset;
+          width: 100%;
         }
+
         .hero-card::before {
           content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 50%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent);
-          border-radius: 16px 16px 0 0; pointer-events: none;
+          position: absolute; top: 0; left: 0; right: 0; height: 55%;
+          background: linear-gradient(180deg, 
+            rgba(255,255,255,0.3) 0%,
+            rgba(255,255,255,0.05) 60%,
+            transparent 100%);
+          border-radius: 16px 16px 50% 50%;
+          pointer-events: none;
+          z-index: 0;
         }
 
         .hero-art {
@@ -471,40 +598,59 @@ input[type=range]::-webkit-slider-thumb {
         .hero-art img { width: 100%; height: 100%; object-fit: cover; }
 
         .hero-info { 
-  display: flex; flex-direction: column; justify-content: center; 
-  gap: 5px; flex: 1; min-width: 0; overflow: visible; z-index: 5;
-}
+          display: flex; flex-direction: column; justify-content: center; 
+          gap: 5px; flex: 1; min-width: 0; overflow: hidden; z-index: 5;
+        }
         .hero-label { font-size: 10px; font-weight: 700; color: ${T.textSub}; text-transform: uppercase; letter-spacing: 0.1em; }
         .hero-title {
-  font-size: 14px; font-weight: 700; 
-  color: #003320 !important;
-  text-shadow: 0 1px 4px rgba(255,255,255,0.9);
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-  max-width: 100%;
-  display: block;
-}
-        .hero-sub { font-size: 12px; color: ${T.textSub}; }
+          font-size: 18px; font-weight: 700; 
+          color: ${T.text};
+          text-shadow: 0 1px 4px rgba(255,255,255,0.2);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+        }
+        .hero-sub { font-size: 12px; color: ${T.textSub}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .hero-btns { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 
         .btn-play-hero {
           width: 40px; height: 40px; border-radius: 50%;
           border: none; cursor: pointer;
-          background: linear-gradient(160deg, ${T.accent}, ${T.highlight});
+          background: radial-gradient(circle at 35% 35%,
+            ${IS_DAY ? "#44ff88" : "#00ffcc"} 0%,
+            ${T.accent} 40%,
+            ${T.highlight} 100%);
           color: white; font-size: 16px;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 14px ${T.accentGlow};
-          position: relative; overflow: hidden; transition: all 0.15s;
+          box-shadow: 
+            0 6px 20px ${T.accentGlow},
+            0 2px 4px rgba(0,0,0,0.2),
+            0 1px 0 rgba(255,255,255,0.5) inset,
+            0 -2px 4px rgba(0,0,0,0.15) inset;
+          position: relative; overflow: hidden; 
+          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
         .btn-play-hero::before {
           content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 50%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
-          border-radius: 50% 50% 0 0; pointer-events: none;
+          position: absolute; top: 4px; left: 4px; right: 4px;
+          height: 45%;
+          background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+          border-radius: 50% 50% 0 0;
+          pointer-events: none;
         }
-        .btn-play-hero:hover { transform: scale(1.06); }
+
+        .btn-play-hero:hover { 
+          transform: scale(1.12);
+          box-shadow: 
+            0 8px 28px ${T.accentGlow},
+            0 2px 4px rgba(0,0,0,0.2),
+            0 2px 0 rgba(255,255,255,0.6) inset;
+        }
+
+        .btn-play-hero:active { transform: scale(0.95); }
 
         .visualizer-bar {
           width: 100%; height: 48px;
@@ -513,25 +659,27 @@ input[type=range]::-webkit-slider-thumb {
           border: 1px solid ${T.glassBorder};
           overflow: hidden;
         }
-        .visualizer-bar canvas { width: 100%; height: 100%; }
+        .visualizer-bar canvas { width: 100%; height: 100%; display: block; }
 
         .track-list-header {
           display: grid;
-          grid-template-columns: 32px 1fr 120px 80px;
+          grid-template-columns: 40px 1fr 120px 80px;
           padding: 0 12px 6px;
           font-size: 10px; font-weight: 700;
           letter-spacing: 0.08em; text-transform: uppercase;
           color: ${T.textSub};
           border-bottom: 1px solid ${T.glassBorder};
+          width: 100%;
         }
 
-.track-row {
-  display: grid;
-  grid-template-columns: 32px 1fr 120px 80px;
-  align-items: center;
-  padding: 8px 12px; border-radius: 8px;
-  cursor: pointer; transition: all 0.15s;
-}
+        .track-row {
+          display: grid;
+          grid-template-columns: 40px 1fr 120px 80px;
+          align-items: center;
+          padding: 8px 12px; border-radius: 8px;
+          cursor: pointer; transition: all 0.15s;
+          width: 100%;
+        }
         .track-row:hover { background: ${T.glass}; }
         .track-row.active {
           background: ${T.accent}22;
@@ -542,7 +690,7 @@ input[type=range]::-webkit-slider-thumb {
         .track-num.playing { color: ${T.accent}; font-weight: 700; }
         .track-name { font-size: 13px; font-weight: 500; color: ${T.text}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .track-name.active { color: ${T.accent}; }
-        .track-artist { font-size: 11px; color: ${T.textSub}; }
+        .track-artist { font-size: 11px; color: ${T.textSub}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .track-dur { font-size: 12px; color: ${T.textSub}; text-align: right; }
 
         .empty-state {
@@ -554,6 +702,7 @@ input[type=range]::-webkit-slider-thumb {
           background: ${T.glass};
           backdrop-filter: blur(8px);
           cursor: pointer; transition: all 0.2s;
+          width: 100%;
         }
         .empty-state:hover { border-color: ${T.accent}; box-shadow: 0 0 20px ${T.accentGlow}33; }
         .empty-icon { font-size: 40px; }
@@ -561,25 +710,26 @@ input[type=range]::-webkit-slider-thumb {
         .empty-sub { font-size: 12px; color: ${T.textSub}; }
 
         .player-bar {
-          height: 80px; min-height: 80px;
-          display: flex; align-items: center;
-          padding: 0 24px; gap: 16px;
-          position: relative; z-index: 10;
+          height: 80px; 
+          min-height: 80px;
+          display: flex; 
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 24px; 
+          gap: 24px;
+          position: relative; 
+          z-index: 10;
           background: ${T.playerBg};
           backdrop-filter: blur(24px) saturate(180%);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
           border-top: 1px solid ${T.glassBorder};
-        }
-        .player-bar::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-          pointer-events: none;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .now-playing {
           display: flex; align-items: center; gap: 10px;
-          min-width: 200px; width: 200px;
+          width: 180px; min-width: 0; flex-shrink: 1;
         }
         .np-art {
           width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0;
@@ -589,50 +739,86 @@ input[type=range]::-webkit-slider-thumb {
           font-size: 20px; overflow: hidden;
         }
         .np-art img { width: 100%; height: 100%; object-fit: cover; }
-        @keyframes marquee {
-  0%, 20% { transform: translateX(0); }
-  80%, 100% { transform: translateX(-100%); }
-}
-.np-title-wrap { width: 140px; overflow: hidden; }
-.np-title {
-  font-size: 12px; font-weight: 600; color: ${T.text};
-  white-space: nowrap; display: inline-block;
-}
-.np-title.scrolling { animation: marquee 6s linear infinite; }
-        .np-artist { font-size: 10px; color: ${T.textSub}; }
+        
+        .np-title-wrap { width: 150px; overflow: hidden; position: relative; }
+        .np-title {
+          font-size: 12px; font-weight: 600; color: ${T.text};
+          white-space: nowrap; display: inline-block;
+        }
+        .np-artist { font-size: 10px; color: ${T.textSub}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .player-center {
           flex: 1; display: flex; flex-direction: column;
-          align-items: center; gap: 5px;
+          align-items: center; gap: 5px; min-width: 0;
         }
 
         .player-controls { display: flex; align-items: center; gap: 12px; }
 
         .ctrl-sm {
           width: 28px; height: 28px; border-radius: 50%;
-          border: none; background: none;
-          color: ${T.textSub}; font-size: 14px;
+          border: 1px solid ${T.glassBorder};
+          background: ${IS_DAY ?
+            "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.7), rgba(200,235,255,0.3))" :
+            "radial-gradient(circle at 35% 35%, rgba(0,80,160,0.6), rgba(0,30,80,0.3))"
+          };
+          color: ${T.textSub}; font-size: 13px;
           cursor: pointer; display: flex; align-items: center; justify-content: center;
-          transition: all 0.15s;
+          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow:
+            0 2px 8px rgba(0,0,0,0.15),
+            0 1px 0 rgba(255,255,255,0.5) inset;
+          position: relative; overflow: hidden;
         }
-        .ctrl-sm:hover { color: ${T.accent}; }
+
+        .ctrl-sm::before {
+          content: '';
+          position: absolute; top: 2px; left: 2px; right: 2px;
+          height: 45%;
+          background: linear-gradient(180deg, rgba(255,255,255,0.45), transparent);
+          border-radius: 50% 50% 0 0;
+          pointer-events: none;
+        }
+
+        .ctrl-sm:hover { 
+          color: ${T.accent};
+          transform: scale(1.1);
+          box-shadow: 0 3px 12px ${T.accentGlow}66, 0 1px 0 rgba(255,255,255,0.6) inset;
+        }
+
+        .ctrl-sm:active { transform: scale(0.9); }
 
         .ctrl-play {
           width: 36px; height: 36px; border-radius: 50%;
           border: none; cursor: pointer;
-          background: linear-gradient(160deg, ${T.accent}, ${T.highlight});
+          background: radial-gradient(circle at 35% 35%,
+            ${IS_DAY ? "#44ff88" : "#00ffcc"} 0%,
+            ${T.accent} 45%,
+            ${T.highlight} 100%);
           color: white; font-size: 14px;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 3px 12px ${T.accentGlow};
-          position: relative; overflow: hidden; transition: all 0.15s;
+          box-shadow: 
+            0 4px 16px ${T.accentGlow},
+            0 1px 0 rgba(255,255,255,0.5) inset,
+            0 -2px 4px rgba(0,0,0,0.15) inset;
+          position: relative; overflow: hidden;
+          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
         .ctrl-play::before {
           content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 50%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
-          border-radius: 50% 50% 0 0; pointer-events: none;
+          position: absolute; top: 3px; left: 3px; right: 3px;
+          height: 45%;
+          background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent);
+          border-radius: 50% 50% 0 0;
+          pointer-events: none;
         }
-        .ctrl-play:hover { transform: scale(1.08); }
+
+        .ctrl-play:hover { 
+          transform: scale(1.12);
+          box-shadow: 0 6px 20px ${T.accentGlow}, 0 2px 0 rgba(255,255,255,0.6) inset;
+        }
+
+        .ctrl-play:active { transform: scale(0.92); }
 
         .progress-row {
           display: flex; align-items: center; gap: 8px;
@@ -659,16 +845,6 @@ input[type=range]::-webkit-slider-thumb {
           display: flex; align-items: center;
           justify-content: flex-end; gap: 8px;
         }
-        .vol-track {
-          width: 70px; height: 4px; border-radius: 2px;
-          background: ${T.glass};
-          border: 1px solid ${T.glassBorder};
-          cursor: pointer; overflow: hidden;
-        }
-        .vol-fill {
-          height: 100%; border-radius: 2px;
-          background: linear-gradient(90deg, ${T.accent}, ${T.highlight});
-        }
         .theme-pill {
           font-size: 10px; font-weight: 600;
           padding: 3px 8px; border-radius: 20px;
@@ -683,7 +859,7 @@ input[type=range]::-webkit-slider-thumb {
         ref={audioRef}
         onTimeUpdate={() => {
           const a = audioRef.current
-          if (!a.duration) return
+          if (!a || !a.duration) return
           setProgress((a.currentTime / a.duration) * 100)
           setCurrentTime(fmt(a.currentTime))
           setDuration(fmt(a.duration))
@@ -703,10 +879,16 @@ input[type=range]::-webkit-slider-thumb {
             {tracks.length > 0 && (
               <>
                 <div className="section-label">Your Music</div>
-                <div className="mood-group">
-                  <span style={{fontSize:18}}>🎵</span>
-                  <div>
-                    <div className="mg-name">All Tracks</div>
+                <div className="mood-group"
+  onClick={() => setSelectedMood(null)}
+  style={{
+    background: selectedMood === null ? `${T.accent}22` : undefined,
+    border: selectedMood === null ? `1px solid ${T.accent}44` : "1px solid transparent",
+    borderRadius: 8,
+  }}>
+  <span style={{fontSize:18}}>🎵</span>
+  <div>
+    <div className="mg-name">All Tracks</div>
                     <div className="mg-count">{tracks.length} song{tracks.length>1?"s":""}</div>
                   </div>
                 </div>
@@ -717,7 +899,14 @@ input[type=range]::-webkit-slider-thumb {
               <>
                 <div className="section-label">By Mood</div>
                 {Object.entries(moodGroups).map(([mood, list]) => (
-                  <div key={mood} className="mood-group">
+  <div key={mood} className="mood-group"
+    onClick={() => setSelectedMood(selectedMood === mood ? null : mood)}
+    style={{
+      background: selectedMood === mood ? `${T.accent}22` : undefined,
+      border: selectedMood === mood ? `1px solid ${T.accent}44` : "1px solid transparent",
+      borderRadius: 8,
+    }}>
+                  
                     <span style={{fontSize:18}}>
                       {mood==="Energetic"?"⚡":mood==="Happy"?"😊":mood==="Melancholic"?"🌧️":mood==="Focused"?"🎯":"🌊"}
                     </span>
@@ -742,9 +931,20 @@ input[type=range]::-webkit-slider-thumb {
               <span className="greeting">{IS_DAY ? "☀️ Good day" : "🌙 Good evening"}</span>
               <span className="clock-badge">{time}</span>
             </div>
+            {selectedMood && (
+  <div style={{display:"flex", alignItems:"center", gap:8}}>
+    <span style={{fontSize:13, fontWeight:600, color:T.accent}}>
+      {selectedMood === "Energetic"?"⚡":selectedMood === "Happy"?"😊":selectedMood === "Melancholic"?"🌧️":selectedMood === "Focused"?"🎯":"🌊"} {selectedMood} playlist
+    </span>
+    <span onClick={() => setSelectedMood(null)}
+      style={{fontSize:11, color:T.textSub, cursor:"pointer", textDecoration:"underline"}}>
+      Clear
+    </span>
+  </div>
+)}
 
-            {/* HERO */}
-            <div className="hero-card" style={{overflow:"visible"}}>
+            {/* HERO CARD */}
+            <div className="hero-card">
               <div className="hero-art">
                 {track?.art
                   ? <img src={track.art} alt="album art"/>
@@ -771,63 +971,54 @@ input[type=range]::-webkit-slider-thumb {
             </div>
 
             {/* VISUALIZER */}
-            <div className="visualizer-bar" style={{display: isPlaying ? "block" : "none"}}>
-  <canvas ref={vizCanvasRef}/>
-</div>
+            <div className="visualizer-bar" style={{ display: isPlaying ? "block" : "none" }}>
+              <canvas ref={vizCanvasRef} />
+            </div>
 
-            {/* TRACK LIST */}
-            {tracks.length > 0 ? (
-              <>
-               <div className="track-list-header">
-  <span>#</span>
-  <span>Title</span>
-  <span>Playlist</span>
-  <span style={{textAlign:"right"}}>Duration</span>
-</div>
-{tracks.map((t, i) => (
-  <div key={i}
-    className={`track-row${i===currentIndex?" active":""}`}
-    onClick={() => loadTrack(i)}>
-    <span className={`track-num${i===currentIndex&&isPlaying?" playing":""}`}>
-      {i===currentIndex && isPlaying ? "▶" : i+1}
-    </span>
-    <div style={{minWidth:0}}>
-      <div className={`track-name${i===currentIndex?" active":""}`}>{t.name}</div>
-      <div className="track-artist">{t.artist}</div>
-    </div>
-    <span className="track-dur" style={{fontSize:11, color:T.textSub, textAlign:"left" , paddingLeft:8}}>
-      {t.mood || "—"}
-    </span>
-    <span className="track-dur" style={{textAlign:"right"}}>
-      {t.duration || "—"}
-    </span>
-  </div>
-))}
-              </>
-            ) : (
+            {/* TRACK LIST / EMPTY STATE */}
+            {tracks.length === 0 ? (
               <label className="empty-state">
-                <span className="empty-icon">{IS_DAY ? "🌿" : "🌙"}</span>
-                <span className="empty-title">Drop your music here</span>
-                <span className="empty-sub">Supports MP3, WAV, OGG</span>
+                <span className="empty-icon">🎧</span>
+                <div className="empty-title">Drop your MP3s here</div>
+                <div className="empty-sub">or click to browse your computer</div>
                 <input type="file" accept=".mp3,.wav,.ogg" multiple hidden onChange={handleFiles}/>
               </label>
+            ) : (
+              <div>
+                <div className="track-list-header">
+                  <span>#</span>
+                  <span>Title</span>
+                  <span>Artist</span>
+                  <span style={{textAlign:"right"}}>Duration</span>
+                </div>
+                {(selectedMood ? tracks.filter(t => t.mood === selectedMood) : tracks).map((t, i) => (
+                  <div
+                    key={i}
+                    className={`track-row ${i === currentIndex ? "active" : ""}`}
+                    onClick={() => loadTrack(i)}
+                  >
+                    <span className={`track-num ${i === currentIndex && isPlaying ? "playing" : ""}`}>
+                      {i === currentIndex && isPlaying ? "▶" : i + 1}
+                    </span>
+                    <span className={`track-name ${i === currentIndex ? "active" : ""}`}>{t.name}</span>
+                    <span className="track-artist">{t.artist}</span>
+                    <span className="track-dur">{t.duration}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
-        {/* BOTTOM PLAYER */}
+        {/* BOTTOM PLAYER BAR */}
         <div className="player-bar">
           <div className="now-playing">
             <div className="np-art">
-              {track?.art ? <img src={track.art} alt="art"/> : IS_DAY ? "🌿" : "🌙"}
+              {track?.art ? <img src={track.art} alt="art"/> : (IS_DAY ? "🌿" : "🌙")}
             </div>
-            <div style={{minWidth:0}}>
             <div className="np-title-wrap">
-  <span className={`np-title${track && track.name && track.name.length > 20 ? " scrolling" : ""}`}>
-    {track?.name || "Nothing playing"}
-  </span>
-</div>
-              <div className="np-artist">{track?.artist || "—"}</div>
+              <div className="np-title">{track?.name || "No track selected"}</div>
+              <div className="np-artist">{track?.artist || "AeroPlay"}</div>
             </div>
           </div>
 
@@ -841,40 +1032,24 @@ input[type=range]::-webkit-slider-thumb {
             </div>
             <div className="progress-row">
               <span className="time-lbl">{currentTime}</span>
-              <div className="prog-track"
-                onClick={e => {
+              <div
+                className="prog-track"
+                onClick={(e) => {
+                  const audio = audioRef.current
+                  if (!audio || !audio.duration) return
                   const rect = e.currentTarget.getBoundingClientRect()
-                  if (audioRef.current.duration) {
-                    audioRef.current.currentTime = ((e.clientX-rect.left)/rect.width) * audioRef.current.duration
-                  }
-                }}>
-                <div className="prog-fill" style={{width:progress+"%"}}/>
+                  const pos = (e.clientX - rect.left) / rect.width
+                  audio.currentTime = pos * audio.duration
+                }}
+              >
+                <div className="prog-fill" style={{ width: `${progress}%` }} />
               </div>
               <span className="time-lbl r">{duration}</span>
             </div>
           </div>
 
           <div className="player-right">
-            <span style={{fontSize:13, color:T.textSub}}>🔊</span>
-            <input
-  type="range"
-  min="0" max="100"
-  value={volume}
-  onChange={e => {
-    const v = Number(e.target.value)
-    setVolume(v)
-    if (audioRef.current) audioRef.current.volume = v / 100
-  }}
-  style={{
-    width: 70,
-    accentColor: T.accent,
-    cursor: "pointer",
-    background: "transparent",
-  }}
-/>
-            <span className="theme-pill">
-              {IS_DAY ? "☀️ Day" : "🌙 Night"}
-            </span>
+            <span className="theme-pill">{IS_DAY ? "☀️ Aqua Day" : "🌙 Gloss Night"}</span>
           </div>
         </div>
       </div>

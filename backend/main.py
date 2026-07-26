@@ -20,7 +20,8 @@ client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
 def extract_features(path):
     try:
         y, sr = librosa.load(path, duration=30, sr=None)
-        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+        tempo_arr, _ = librosa.beat.beat_track(y=y, sr=sr)
+        tempo = float(tempo_arr) if np.isscalar(tempo_arr) else float(tempo_arr.item())
         energy = float(np.mean(librosa.feature.rms(y=y)))
         spectral = float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr)))
         valence = float(np.mean(librosa.feature.chroma_stft(y=y, sr=sr)))
@@ -31,22 +32,29 @@ def extract_features(path):
             "valence": valence,
         }
     except Exception as e:
-        return None
+        return {"error": str(e), "type": type(e).__name__}
 
 def classify_mood(features):
-    if not features:
+    if not features or "error" in features:
         return "Chill"
+    
     tempo = features["tempo"]
     energy = features["energy"]
     valence = features["valence"]
-    if tempo > 120 and energy > 0.05:
-        return "Energetic"
-    elif tempo > 100 and valence > 0.45:
+
+    # Happy: high valence + moderate to high tempo
+    if valence > 0.45 and tempo > 100 and energy > 0.04:
         return "Happy"
-    elif tempo < 80 and energy < 0.03:
+    # Energetic: very fast + high energy + lower valence
+    elif tempo > 130 and energy > 0.08 and valence <= 0.45:
+        return "Energetic"
+    # Melancholic: slow + low energy
+    elif tempo < 85 and energy < 0.05:
         return "Melancholic"
-    elif energy < 0.04 and valence < 0.35:
+    # Focused: low energy + low valence
+    elif energy < 0.06 and valence < 0.38:
         return "Focused"
+    # Chill: everything else
     else:
         return "Chill"
 
@@ -99,3 +107,13 @@ Rules: poetic but grounded, no emojis, no quotes, no generic phrases like 'sonic
         return {"description": message.content[0].text}
     except Exception as e:
         return {"description": f"A {mood.lower()} collection of tracks.", "error": str(e)}
+@app.post("/debug")
+async def debug(file: UploadFile = File(...)):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        features = extract_features(tmp_path)
+        return {"features": features}
+    finally:
+        os.unlink(tmp_path)
