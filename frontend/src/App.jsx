@@ -444,51 +444,49 @@ export default function App() {
         }
 
         .sidebar {
-          width: 240px; 
-          min-width: 240px;
-          max-width: 240px;
-          height: 100%;
-          display: flex; 
-          flex-direction: column;
-          padding: 20px 14px; 
-          gap: 12px;
-          background: ${IS_DAY ? 
-            "linear-gradient(160deg, rgba(255,255,255,0.45) 0%, rgba(200,235,255,0.25) 50%, rgba(255,255,255,0.15) 100%)" :
-            "linear-gradient(160deg, rgba(0,40,100,0.6) 0%, rgba(0,20,60,0.4) 50%, rgba(0,30,80,0.3) 100%)"
-          };
-          backdrop-filter: blur(32px) saturate(200%);
-          -webkit-backdrop-filter: blur(32px) saturate(200%);
-          border-right: 1px solid ${T.glassBorder};
-          overflow-y: auto;
-          z-index: 5;
-          position: relative;
-        }
+  width: 240px; 
+  min-width: 240px;
+  max-width: 240px;
+  height: 100%;
+  display: flex; 
+  flex-direction: column;
+  padding: 20px 14px; 
+  gap: 12px;
+  background: ${IS_DAY ? 
+    "linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(200,235,255,0.3) 40%, rgba(255,255,255,0.2) 100%)" :
+    "linear-gradient(160deg, rgba(0,60,120,0.7) 0%, rgba(0,30,80,0.5) 50%, rgba(0,40,100,0.35) 100%)"
+  };
+  backdrop-filter: blur(40px) saturate(220%) brightness(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.1);
+  border-right: 1px solid ${T.glassBorder};
+  overflow-y: auto;
+  z-index: 5;
+  position: relative;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.08), 1px 0 0 rgba(255,255,255,0.4) inset;
+}
 
-        .sidebar::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 60%;
-          background: linear-gradient(180deg, 
-            rgba(255,255,255,0.25) 0%, 
-            rgba(255,255,255,0.08) 50%,
-            transparent 100%);
-          border-radius: 0 0 60% 60%;
-          pointer-events: none;
-          z-index: 0;
-        }
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 55%;
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.3) 0%, 
+    rgba(255,255,255,0.06) 60%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-        .sidebar::after {
-          content: '';
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          height: 30%;
-          background: linear-gradient(0deg,
-            rgba(255,255,255,0.08) 0%,
-            transparent 100%);
-          pointer-events: none;
-          z-index: 0;
-        }
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 1px; height: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
 
         .logo {
           font-size: 20px; font-weight: 700;
@@ -524,14 +522,13 @@ export default function App() {
           font-weight: 600;
           color: ${T.accent}; 
           cursor: pointer;
-          border: 1px dashed ${T.accent}66;
-          background: ${T.accent}11;
+          border: 1px dashed ${T.accent}99;
+          background: ${T.accent}33;
           transition: all 0.2s; 
-          margin-top: auto;
           position: relative;
           z-index: 20;
         }
-        .upload-side:hover { background: ${T.accent}22; }
+        .upload-side:hover { background: ${T.accent}44; }
 
         .content {
           flex: 1; 
@@ -558,33 +555,42 @@ export default function App() {
         }
 
         .hero-card {
-          display: flex; gap: 20px; padding: 20px;
-          border-radius: 16px; position: relative; overflow: hidden;
-          background: ${IS_DAY ?
-            "linear-gradient(160deg, rgba(255,255,255,0.5) 0%, rgba(200,235,255,0.3) 100%)" :
-            "linear-gradient(160deg, rgba(0,50,120,0.5) 0%, rgba(0,20,60,0.3) 100%)"
-          };
-          backdrop-filter: blur(28px) saturate(180%);
-          -webkit-backdrop-filter: blur(28px) saturate(180%);
-          border: 1px solid ${T.glassBorder};
-          box-shadow: 
-            0 8px 32px rgba(0,0,0,0.15),
-            0 2px 0 rgba(255,255,255,0.4) inset,
-            0 -1px 0 rgba(255,255,255,0.1) inset;
-          width: 100%;
-        }
+  display: flex; gap: 20px; padding: 20px;
+  border-radius: 20px; position: relative; overflow: hidden;
+  background: ${IS_DAY ?
+    "linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(200,235,255,0.35) 50%, rgba(255,255,255,0.25) 100%)" :
+    "linear-gradient(135deg, rgba(0,60,140,0.6) 0%, rgba(0,30,80,0.4) 50%, rgba(0,50,120,0.3) 100%)"
+  };
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.05);
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.05);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 
+    0 8px 40px rgba(0,0,0,0.12),
+    0 2px 0 rgba(255,255,255,0.6) inset,
+    0 -1px 0 rgba(255,255,255,0.15) inset,
+    0 0 0 1px rgba(255,255,255,0.1);
+  width: 100%;
+}
 
-        .hero-card::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 55%;
-          background: linear-gradient(180deg, 
-            rgba(255,255,255,0.3) 0%,
-            rgba(255,255,255,0.05) 60%,
-            transparent 100%);
-          border-radius: 16px 16px 50% 50%;
-          pointer-events: none;
-          z-index: 0;
-        }
+.hero-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.35) 0%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 100%);
+  border-radius: 20px 20px 60% 60%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+}
 
         .hero-art {
           width: 110px; height: 110px; min-width: 110px;
@@ -616,41 +622,38 @@ export default function App() {
         .hero-btns { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 
         .btn-play-hero {
-          width: 40px; height: 40px; border-radius: 50%;
-          border: none; cursor: pointer;
-          background: radial-gradient(circle at 35% 35%,
-            ${IS_DAY ? "#44ff88" : "#00ffcc"} 0%,
-            ${T.accent} 40%,
-            ${T.highlight} 100%);
-          color: white; font-size: 16px;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 
-            0 6px 20px ${T.accentGlow},
-            0 2px 4px rgba(0,0,0,0.2),
-            0 1px 0 rgba(255,255,255,0.5) inset,
-            0 -2px 4px rgba(0,0,0,0.15) inset;
-          position: relative; overflow: hidden; 
-          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.9) 0%,
+    ${T.accent} 30%,
+    ${T.highlight} 100%);
+  color: white; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 
+    0 8px 24px ${T.accentGlow},
+    0 2px 0 rgba(255,255,255,0.7) inset,
+    0 -2px 6px rgba(0,0,0,0.1) inset;
+  position: relative; overflow: hidden; 
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-        .btn-play-hero::before {
-          content: '';
-          position: absolute; top: 4px; left: 4px; right: 4px;
-          height: 45%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
-          border-radius: 50% 50% 0 0;
-          pointer-events: none;
-        }
+.btn-play-hero::before {
+  content: '';
+  position: absolute; top: 3px; left: 3px; right: 3px;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.1));
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+}
 
-        .btn-play-hero:hover { 
-          transform: scale(1.12);
-          box-shadow: 
-            0 8px 28px ${T.accentGlow},
-            0 2px 4px rgba(0,0,0,0.2),
-            0 2px 0 rgba(255,255,255,0.6) inset;
-        }
+.btn-play-hero:hover { 
+  transform: scale(1.1);
+  box-shadow: 0 10px 32px ${T.accentGlow}, 0 2px 0 rgba(255,255,255,0.8) inset;
+}
 
-        .btn-play-hero:active { transform: scale(0.95); }
+.btn-play-hero:active { transform: scale(0.94); }
 
         .visualizer-bar {
           width: 100%; height: 48px;
@@ -710,22 +713,40 @@ export default function App() {
         .empty-sub { font-size: 12px; color: ${T.textSub}; }
 
         .player-bar {
-          height: 80px; 
-          min-height: 80px;
-          display: flex; 
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 24px; 
-          gap: 24px;
-          position: relative; 
-          z-index: 10;
-          background: ${T.playerBg};
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border-top: 1px solid ${T.glassBorder};
-          width: 100%;
-          box-sizing: border-box;
-        }
+  height: 80px; 
+  min-height: 80px;
+  display: flex; 
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px; 
+  gap: 24px;
+  position: relative; 
+  z-index: 10;
+  background: ${IS_DAY ?
+    "linear-gradient(180deg, rgba(200,240,255,0.5) 0%, rgba(255,255,255,0.35) 100%)" :
+    "linear-gradient(180deg, rgba(0,20,60,0.7) 0%, rgba(0,10,40,0.6) 100%)"
+  };
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border-top: 1px solid rgba(255,255,255,0.4);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08), 0 -1px 0 rgba(255,255,255,0.5) inset;
+}
+
+.player-bar::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  pointer-events: none;
+}
+
+.player-bar::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
+  pointer-events: none;
+}
 
         .now-playing {
           display: flex; align-items: center; gap: 10px;
@@ -755,70 +776,82 @@ export default function App() {
         .player-controls { display: flex; align-items: center; gap: 12px; }
 
         .ctrl-sm {
-          width: 28px; height: 28px; border-radius: 50%;
-          border: 1px solid ${T.glassBorder};
-          background: ${IS_DAY ?
-            "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.7), rgba(200,235,255,0.3))" :
-            "radial-gradient(circle at 35% 35%, rgba(0,80,160,0.6), rgba(0,30,80,0.3))"
-          };
-          color: ${T.textSub}; font-size: 13px;
-          cursor: pointer; display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-          box-shadow:
-            0 2px 8px rgba(0,0,0,0.15),
-            0 1px 0 rgba(255,255,255,0.5) inset;
-          position: relative; overflow: hidden;
-        }
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.45);
+  background: ${IS_DAY ?
+    "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85), rgba(200,235,255,0.5), rgba(150,210,255,0.2))" :
+    "radial-gradient(circle at 35% 30%, rgba(0,100,200,0.7), rgba(0,50,130,0.5), rgba(0,20,80,0.3))"
+  };
+  color: ${T.textSub}; font-size: 13px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.12),
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 -1px 0 rgba(0,0,0,0.05) inset;
+  position: relative; overflow: hidden;
+}
 
-        .ctrl-sm::before {
-          content: '';
-          position: absolute; top: 2px; left: 2px; right: 2px;
-          height: 45%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.45), transparent);
-          border-radius: 50% 50% 0 0;
-          pointer-events: none;
-        }
+.ctrl-sm::before {
+  content: '';
+  position: absolute; top: 2px; left: 2px; right: 2px;
+  height: 46%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent);
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+}
 
-        .ctrl-sm:hover { 
-          color: ${T.accent};
-          transform: scale(1.1);
-          box-shadow: 0 3px 12px ${T.accentGlow}66, 0 1px 0 rgba(255,255,255,0.6) inset;
-        }
+.ctrl-sm:hover { 
+  color: ${T.accent};
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px ${T.accentGlow}88, 0 1px 0 rgba(255,255,255,0.7) inset;
+}
 
-        .ctrl-sm:active { transform: scale(0.9); }
+.ctrl-sm:active { transform: scale(0.9); }
 
         .ctrl-play {
-          width: 36px; height: 36px; border-radius: 50%;
-          border: none; cursor: pointer;
-          background: radial-gradient(circle at 35% 35%,
-            ${IS_DAY ? "#44ff88" : "#00ffcc"} 0%,
-            ${T.accent} 45%,
-            ${T.highlight} 100%);
-          color: white; font-size: 14px;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 
-            0 4px 16px ${T.accentGlow},
-            0 1px 0 rgba(255,255,255,0.5) inset,
-            0 -2px 4px rgba(0,0,0,0.15) inset;
-          position: relative; overflow: hidden;
-          transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.9) 0%,
+    ${T.accent} 35%,
+    ${T.highlight} 100%);
+  color: white; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 
+    0 6px 20px ${T.accentGlow},
+    0 2px 4px rgba(0,0,0,0.15),
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 -2px 6px rgba(0,0,0,0.1) inset;
+  position: relative; overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-        .ctrl-play::before {
-          content: '';
-          position: absolute; top: 3px; left: 3px; right: 3px;
-          height: 45%;
-          background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent);
-          border-radius: 50% 50% 0 0;
-          pointer-events: none;
-        }
+.ctrl-play::before {
+  content: '';
+  position: absolute; top: 2px; left: 2px; right: 2px;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1));
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+}
 
-        .ctrl-play:hover { 
-          transform: scale(1.12);
-          box-shadow: 0 6px 20px ${T.accentGlow}, 0 2px 0 rgba(255,255,255,0.6) inset;
-        }
+.ctrl-play::after {
+  content: '';
+  position: absolute; bottom: 3px; left: 6px; right: 6px;
+  height: 20%;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15));
+  border-radius: 0 0 50% 50%;
+  pointer-events: none;
+}
 
-        .ctrl-play:active { transform: scale(0.92); }
+.ctrl-play:hover { 
+  transform: scale(1.1);
+  box-shadow: 0 8px 28px ${T.accentGlow}, 0 2px 0 rgba(255,255,255,0.8) inset;
+}
+
+.ctrl-play:active { transform: scale(0.93); }
 
         .progress-row {
           display: flex; align-items: center; gap: 8px;
@@ -978,9 +1011,9 @@ export default function App() {
             {/* TRACK LIST / EMPTY STATE */}
             {tracks.length === 0 ? (
               <label className="empty-state">
-                <span className="empty-icon">🎧</span>
-                <div className="empty-title">Drop your MP3s here</div>
-                <div className="empty-sub">or click to browse your computer</div>
+                <span className="empty-icon">{IS_DAY ? "🌿" : "🌙"}</span>
+<span className="empty-title">Drop your music here</span>
+<span className="empty-sub">Supports MP3, WAV, OGG</span>
                 <input type="file" accept=".mp3,.wav,.ogg" multiple hidden onChange={handleFiles}/>
               </label>
             ) : (
@@ -988,7 +1021,7 @@ export default function App() {
                 <div className="track-list-header">
                   <span>#</span>
                   <span>Title</span>
-                  <span>Artist</span>
+                  <span>Playlist</span>
                   <span style={{textAlign:"right"}}>Duration</span>
                 </div>
                 {(selectedMood ? tracks.filter(t => t.mood === selectedMood) : tracks).map((t, i) => (
@@ -1001,7 +1034,9 @@ export default function App() {
                       {i === currentIndex && isPlaying ? "▶" : i + 1}
                     </span>
                     <span className={`track-name ${i === currentIndex ? "active" : ""}`}>{t.name}</span>
-                    <span className="track-artist">{t.artist}</span>
+                    <span className="track-dur" style={{fontSize:11, color:T.textSub, textAlign:"left", paddingLeft:8}}>
+  {t.mood || "—"}
+</span>
                     <span className="track-dur">{t.duration}</span>
                   </div>
                 ))}
@@ -1049,7 +1084,7 @@ export default function App() {
           </div>
 
           <div className="player-right">
-            <span className="theme-pill">{IS_DAY ? "☀️ Aqua Day" : "🌙 Gloss Night"}</span>
+            <span className="theme-pill">{IS_DAY ? "☀️ Day" : "🌙Night"}</span>
           </div>
         </div>
       </div>
