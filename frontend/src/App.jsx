@@ -338,14 +338,24 @@ export default function App() {
         .mood-group .mg-count { font-size:10px; color:${T.textSub}; }
 
         .upload-side {
-          display:flex; align-items:center; justify-content:center; gap:8px;
-          padding:12px; border-radius:10px; font-size:13px; font-weight:600;
-          color:${T.accent}; cursor:pointer;
-          border:1px solid rgba(100,180,255,0.4); background:rgba(100,180,255,0.12);
-          backdrop-filter:blur(8px); transition:all 0.2s; position:relative; z-index:20;
-          box-shadow:0 2px 8px rgba(100,180,255,0.15),0 1px 0 rgba(255,255,255,0.3) inset;
-        }
-        .upload-side:hover { background:rgba(100,180,255,0.22); border-color:rgba(100,180,255,0.6); }
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 8px;
+  padding: 12px; 
+  border-radius: 10px;
+  font-size: 13px; 
+  font-weight: 600;
+  color: ${T.accent}; 
+  cursor: pointer;
+  border: 1px dashed ${T.accent}66;
+  background: ${T.accent}11;
+  transition: all 0.2s; 
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 2px 8px ${T.accentGlow}22;
+}
+.upload-side:hover { background: ${T.accent}22; border-color: ${T.accent}99; }
 
         .content { flex:1; height:100%; overflow-y:auto; padding:24px 28px; display:flex; flex-direction:column; gap:18px; min-width:0; }
         .content-header { display:flex; justify-content:space-between; align-items:center; }
@@ -655,10 +665,14 @@ export default function App() {
             </div>
           </div>
           <div className="player-right">
-            <input type="range" min="0" max="100" value={volume}
+  <span style={{fontSize:13, color:T.textSub}}>🔊</span>
+  <input type="range" min="0" max="100" value={volume}
               onChange={e => { const v=Number(e.target.value); setVolume(v); if(audioRef.current) audioRef.current.volume=v/100 }}
               style={{width:70, accentColor:T.accent, cursor:"pointer"}}
             />
+            <span className="theme-pill" onClick={() => setIsDayMode(!isDayMode)} style={{cursor:"pointer"}}>
+    {isDayMode ? "☀️ Day" : "🌙 Night"}
+  </span>
           </div>
         </div>
 
