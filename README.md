@@ -19,13 +19,13 @@ A Frutiger Aero-inspired web music player that channels peak 2000s tech nostalgi
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Frontend:** React.js, Web Audio API, HTML5 Canvas (Deployed on Netlify)
 * **Backend:** Python, FastAPI, Librosa, Scikit-Learn (Deployed on Render)
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 Try out AeroPlay live here: **[aeroplayer.netlify.app](https://aeroplayer.netlify.app/)**
