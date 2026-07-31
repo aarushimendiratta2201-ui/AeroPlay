@@ -29,3 +29,5 @@ A Frutiger Aero-inspired web music player that channels peak 2000s tech nostalgi
 ## Live Demo
 
 Try out AeroPlay live here: **[aeroplayer.netlify.app](https://aeroplayer.netlify.app/)**
+backend connected
+
