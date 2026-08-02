@@ -1,3 +1,4 @@
+import { supabase } from './supabase.js'
 import { useState, useEffect, useRef } from "react"
 
 const HOUR = new Date().getHours()
@@ -82,6 +83,38 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
+  //
+  useEffect(() => {
+    async function loadTracks() {
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("*")
+        .order("created_at", { ascending: true })
+      
+      if (error) { console.error(error); return }
+      if (!data.length) return
+      
+      const loaded = data.map(t => ({
+        ...t,
+        url: t.file_url,
+        art: t.art_url,
+      }))
+      
+      setTracks(loaded)
+      
+      // Rebuild mood groups
+      const groups = {}
+      loaded.forEach(t => {
+        if (!t.mood) return
+        if (!groups[t.mood]) groups[t.mood] = []
+        groups[t.mood].push(t)
+      })
+      setMoodGroups(groups)
+      
+      loadTrack(0, loaded)
+    }
+    loadTracks()
+  }, [])
   // Bubbles — recreate when count changes
   useEffect(() => {
     const canvas = canvasRef.current
@@ -219,21 +252,84 @@ export default function App() {
 
   async function handleFiles(e) {
     const files = Array.from(e.target.files)
-    const newTracks = await Promise.all(files.map(async (f) => {
+    
+    for (const f of files) {
       const meta = await readMetadata(f)
       const dur = await getDuration(f)
-      return {file:f, name:meta.title||f.name.replace(/\.[^.]+$/,""), artist:meta.artist||"Local Track", art:meta.art, url:URL.createObjectURL(f), mood:null, duration:dur}
-    }))
-    setTracks(prev => {
-      const updated = [...prev, ...newTracks]
-      if (prev.length === 0) setTimeout(() => loadTrack(0, updated), 100)
-      return updated
-    })
-    newTracks.forEach(async (t) => {
-      const mood = await analyseMood(t.file)
-      setTracks(prev => { const u=[...prev]; const idx=u.findIndex(p=>p.url===t.url); if(idx!==-1) u[idx]={...u[idx],mood}; return u })
-      setMoodGroups(prev => { const u={...prev}; if(!u[mood]) u[mood]=[]; if(!u[mood].find(x=>x.url===t.url)) u[mood]=[...u[mood],t]; return u })
-    })
+      
+      // Upload MP3 to Supabase Storage
+      const fileName = `${Date.now()}-${f.name}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("audio-files")
+        .upload(fileName, f)
+      
+      if (uploadError) { console.error("Upload error:", uploadError); continue }
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("audio-files")
+        .getPublicUrl(fileName)
+      
+      const fileUrl = urlData.publicUrl
+      
+      // Upload art if exists
+      let artUrl = null
+      if (meta.art) {
+        const artBlob = await fetch(meta.art).then(r => r.blob())
+        const artName = `${Date.now()}-art.jpg`
+        await supabase.storage.from("artwork").upload(artName, artBlob)
+        const { data: artUrlData } = supabase.storage.from("artwork").getPublicUrl(artName)
+        artUrl = artUrlData.publicUrl
+      }
+      
+      // Save track metadata to database
+      const { data: track, error: dbError } = await supabase.from("tracks").insert({
+        name: meta.title || f.name.replace(/\.[^.]+$/, ""),
+        artist: meta.artist || "Local Track",
+        duration: dur,
+        file_url: fileUrl,
+        art_url: artUrl,
+      }).select().single()
+      
+      if (dbError) { console.error("DB error:", dbError); continue }
+      
+      // Add to local state
+      const newTrack = {
+        ...track,
+        url: fileUrl,
+        art: artUrl,
+        mood: null,
+        file: f,
+      }
+      
+      setTracks(prev => {
+        const updated = [...prev, newTrack]
+        if (prev.length === 0) setTimeout(() => loadTrack(0, updated), 100)
+        return updated
+      })
+      
+      // Analyse mood
+      const mood = await analyseMood(f)
+      
+      // Update mood in database
+      await supabase.from("tracks").update({ mood }).eq("id", track.id)
+      
+      setTracks(prev => {
+        const updated = [...prev]
+        const idx = updated.findIndex(t => t.id === track.id)
+        if (idx !== -1) updated[idx] = { ...updated[idx], mood }
+        return updated
+      })
+      
+      setMoodGroups(prev => {
+        const updated = { ...prev }
+        if (!updated[mood]) updated[mood] = []
+        if (!updated[mood].find(x => x.id === track.id)) {
+          updated[mood] = [...updated[mood], newTrack]
+        }
+        return updated
+      })
+    }
   }
 
   function handleBgImage(e) {
@@ -259,7 +355,7 @@ export default function App() {
     if (!tl[index]) return
     cancelAnimationFrame(vizAnimRef.current)
     const audio = audioRef.current
-    audio.src = tl[index].url; audio.play()
+    audio.src = tl[index].url || tl[index].file_url
     setIsPlaying(true); setCurrentIndex(index)
     initAudioCtx()
     if (analyserRef.current) startViz()
