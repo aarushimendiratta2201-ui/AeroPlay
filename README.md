@@ -29,5 +29,17 @@ A Frutiger Aero-inspired web music player that channels peak 2000s tech nostalgi
 ## Live Demo
 
 Try out AeroPlay live here: **[aeroplayer.netlify.app](https://aeroplayer.netlify.app/)**
-backend connected
+## Database
+
+Powered by **Supabase** (PostgreSQL + Storage):
+- Tracks persist across sessions — upload once, always there
+- MP3 files stored in Supabase Storage (`audio-files` bucket)
+- Album artwork stored in `artwork` bucket  
+- Track metadata (name, artist, mood, duration) in PostgreSQL
+
+## Tech Stack
+Frontend: React.js · Web Audio API · Canvas API (Netlify)  
+Backend: Python · FastAPI · librosa · scikit-learn (Render)  
+Database: Supabase (PostgreSQL + Storage)  
+Live: https://aeroplayerfrutiger.netlify.app
 
