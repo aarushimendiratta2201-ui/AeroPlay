@@ -341,6 +341,13 @@ export default function App() {
   function initAudioCtx() {
     if (audioCtxRef.current) return
     const audio = audioRef.current
+    
+    // Skip visualizer for cross-origin URLs
+    if (audio.src && audio.src.includes('supabase.co')) {
+      console.log("Cross-origin audio - visualizer disabled")
+      return
+    }
+    
     const ctx = new (window.AudioContext||window.webkitAudioContext)()
     const source = ctx.createMediaElementSource(audio)
     const analyser = ctx.createAnalyser()
