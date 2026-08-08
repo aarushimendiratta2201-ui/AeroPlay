@@ -393,6 +393,21 @@ export default function App() {
           width:100vw; height:100vh; display:flex; flex-direction:column;
           position:relative; overflow:hidden; background:${bgImage ? "transparent" : T.bg};
         }
+        .theme-pill {
+  font-size: 11px; font-weight: 600;
+  padding: 5px 12px; border-radius: 20px;
+  color: ${T.accent};
+  background: ${T.accent}15;
+  border: 1.5px solid ${T.accent}66;
+  white-space: nowrap; cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 10px ${T.accentGlow}44, 0 1px 0 rgba(255,255,255,0.2) inset;
+  transition: all 0.2s;
+}
+.theme-pill:hover {
+  background: ${T.accent}25;
+  box-shadow: 0 0 16px ${T.accentGlow}66;
+}
 
         .bg-image {
           position:absolute; inset:0; z-index:0;
@@ -614,8 +629,10 @@ export default function App() {
         .settings-slider { width:100%; accent-color:${T.accent}; }
       `}</style>
 
-      <audio ref={audioRef}
-        onTimeUpdate={() => {
+<audio
+  ref={audioRef}
+  crossOrigin="anonymous"
+  onTimeUpdate={() => {
           const a = audioRef.current
           if (!a||!a.duration) return
           setProgress((a.currentTime/a.duration)*100)
